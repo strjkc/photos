@@ -21,4 +21,4 @@ app.use('/photos', photosRouter)
 
 app.use(middleweare.errorHandler)
 
-app.listen(5000, () => console.log(`app listening on port 500`))
+app.listen(process.env.PORT || 5000, () => console.log(`app listening on port 500`))
