@@ -30,7 +30,10 @@ photosRouter.get('/:id', async (request, response) => {
 photosRouter.delete('/:id', async (request, response) => {
     try{
         const id = request.params.id
+        const photo = await Photo.findById(id)
         await Photo.findOneAndRemove({_id: id})
+        fs.unlinkSync(`/home/strahinja/Documents/projects/photos-bk/uploads/${photo.name}`)
+        fs.unlinkSync(`/home/strahinja/Documents/projects/photos-bk/uploads/${photo.thumbnail}`)
         response.status(204).json({msg: 'Photo removed'})
     }catch(error) {
         console.log(error)
@@ -40,8 +43,8 @@ photosRouter.delete('/:id', async (request, response) => {
 photosRouter.put('/:id', async (request, response) => {
     try{
         const id = request.params.id
-        const currentValue = request.body.isFeatured
-        const savedPhoto = await Photo.findByIdAndUpdate(id, {isFeatured: !currentValue}, {new: true})
+        const note = {...request.body, isFeatured: !request.body.isFeatured}
+        const savedPhoto = await Photo.findByIdAndUpdate(id, note, {new: true})
         console.log('saved photo', savedPhoto)
         response.send(savedPhoto)
     }catch(error){
