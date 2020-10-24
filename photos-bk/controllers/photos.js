@@ -27,6 +27,12 @@ photosRouter.get('/:id', async (request, response) => {
     response.send(photo)
 })
 
+photosRouter.get('/download/:id', async (request, response) => {
+    const photo = await Photo.findById(request.params.id)
+    console.log(photo)
+    response.download(`uploads/${photo.name}`)
+})
+
 photosRouter.delete('/:id', async (request, response) => {
     try{
         const id = request.params.id
