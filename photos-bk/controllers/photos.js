@@ -1,20 +1,20 @@
 const photosRouter = require('express').Router()
 const path = require('path')
 const fs = require('fs')
-const multer = require('multer')
 const Photo = require('../models/photo')
 const sharp = require('sharp')
+const AWS = require('aws-sdk')
+const {Readable} = require('stream')
+const multer = require('multer')
+s3 = new AWS.S3({apiVersion: '2006-03-01'});
+AWS.config.update({accessKeyId: 'AKIAWGY4ISEAZB4XWKIW', secretAccessKey: '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' , region: 'eu-central-1'});
 
-const storage = multer.diskStorage({
-    destination: function(req, file, cb) {
-        cb(null, 'uploads')
-    },
-    filename: function(req, file, cb) {
-        cb(null, file.originalname)
-    }
-})
+// call S3 to retrieve upload file to specified bucket
+var uploadParams = {Bucket: 'photos-gallery', Key: '', Body: ''}
+//
 
-const uploads = multer({storage})
+var uploads = multer({ storage: multer.memoryStorage() })
+
 
 photosRouter.get('/', async (request, response) => {
     const photos = await Photo.find({})
@@ -58,21 +58,73 @@ photosRouter.put('/:id', async (request, response) => {
     }
 })
 
-photosRouter.post('/', uploads.single('image'), async (request,response) => {
-    const imageName = request.file.path.substring(8)
-    
-    sharp(request.file.path)
-        .resize(500,400)
-        .toFile(`uploads/thumbnails/${'thumb_'+request.file.originalname}`, (err, info) => console.log(err, info))
+photosRouter.post('/', uploads.single('image'), async (req,res) => {
+    console.log(req.file)
+    const file = req.file
+    const readable = new Readable()
+    readable._read = () => {} 
+    readable.push(file.buffer)
+    readable.push(null)
+    sharp(file.buffer)
+    .resize(500,400)
+    .toBuffer()
+    .then(async data => {
+        const rStream = new Readable()
+        rStream._read = () => {}
+        rStream.push(data)
+        rStream.push(null)
+        const wStream = fs.createWriteStream(`small_${file.originalname}`, {encoding: 'base64'})
+        uploadParams.Body = rStream
+        uploadParams.Key = path.basename(`small_${file.originalname}`);
+        await s3.upload (uploadParams, function (err, data) {
+            if (err) {
+              console.log("Error", err);
+            } if (data) {
+              console.log("Upload Success", data.Location);
+            }
+          });
+    })
+    sharp(file.buffer)
+    .resize(1366,768)
+    .toBuffer()
+    .then(async data => {
+        const rStream = new Readable()
+        rStream._read = () => {}
+        rStream.push(data)
+        rStream.push(null)
+        const wStream = fs.createWriteStream(`med_${file.originalname}`, {encoding: 'base64'})
+        uploadParams.Body = rStream
+        uploadParams.Key = path.basename(`med_${file.originalname}`);
+        await s3.upload (uploadParams, function (err, data) {
+            if (err) {
+              console.log("Error", err);
+            } if (data) {
+              console.log("Upload Success", data.Location);
+            }
+          });
+    })
+    const writable = fs.createWriteStream('newnew.png', {encoding: 'base64'})
+    uploadParams.Body = readable
+    readable.pipe(writable)
+    uploadParams.Key = path.basename(file.originalname);
+    await s3.upload (uploadParams, function (err, data) {
+        if (err) {
+          console.log("Error", err);
+        } if (data) {
+          console.log("Upload Success", data.Location);
+        }
+      });
     const newPhoto = new Photo({
-        name: imageName,
-        description: request.body.description || '',
-        thumbnail: `/thumbnails/${'thumb_'+request.file.originalname}`,
-        isFeatured: request.body.isFeatured || false
+        name: file.originalname,
+        description: req.body.description || '',
+        thumbnail: `https://photos-gallery.s3.eu-central-1.amazonaws.com/small_${req.file.originalname}`,
+        med: `https://photos-gallery.s3.eu-central-1.amazonaws.com/med_${req.file.originalname}`,
+        high: `https://photos-gallery.s3.eu-central-1.amazonaws.com/${req.file.originalname}`,
+        isFeatured: req.body.isFeatured || false
     })
     const savedPhoto = await newPhoto.save()
     
-    response.json({msg: 'Created'})
+    res.json({msg: 'Created'})
 })
 
 module.exports = photosRouter
