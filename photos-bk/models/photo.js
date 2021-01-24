@@ -6,10 +6,18 @@ const photo = new mongoose.Schema({
         required: true
     },
     description: String,
-    thumbnail: {
+    small: {
         type: String,
         required: true
     },
+    medium: {
+      type: String,
+      required: true
+    },
+  large: {
+    type: String,
+    required: true
+  },
     isFeatured: Boolean
 })
 

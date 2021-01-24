@@ -94,7 +94,7 @@ photosRouter.post('/', uploads.single('image'), async (req,res) => {
         rStream.push(null)
         const wStream = fs.createWriteStream(`med_${file.originalname}`, {encoding: 'base64'})
         uploadParams.Body = rStream
-        uploadParams.Key = path.basename(`med_${file.originalname}`);
+        uploadParams.Key = path.basename(`medium_${file.originalname}`);
         await s3.upload (uploadParams, function (err, data) {
             if (err) {
               console.log("Error", err);
@@ -117,9 +117,9 @@ photosRouter.post('/', uploads.single('image'), async (req,res) => {
     const newPhoto = new Photo({
         name: file.originalname,
         description: req.body.description || '',
-        thumbnail: `https://photos-gallery.s3.eu-central-1.amazonaws.com/small_${req.file.originalname}`,
-        med: `https://photos-gallery.s3.eu-central-1.amazonaws.com/med_${req.file.originalname}`,
-        high: `https://photos-gallery.s3.eu-central-1.amazonaws.com/${req.file.originalname}`,
+        small: `https://photos-gallery.s3.eu-central-1.amazonaws.com/small_${req.file.originalname}`,
+        medium: `https://photos-gallery.s3.eu-central-1.amazonaws.com/medium_${req.file.originalname}`,
+        large: `https://photos-gallery.s3.eu-central-1.amazonaws.com/${req.file.originalname}`,
         isFeatured: req.body.isFeatured || false
     })
     const savedPhoto = await newPhoto.save()
