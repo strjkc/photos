@@ -1,20 +1,7 @@
 const photosRouter = require('express').Router()
-const path = require('path')
-const fs = require('fs')
 const Photo = require('../models/photo')
-const sharp = require('sharp')
-//const AWS = require('aws-sdk')
-const {Readable} = require('stream')
 const multer = require('multer')
-//const config = require('../utils/config')
 const helpers = require('./helpers')
-/*
-s3 = new AWS.S3({apiVersion: '2006-03-01'});
-s3.config.update({accessKeyId: config.aws_id, secretAccessKey: config.aws_secret_key , region: 'eu-central-1'});
-*/
-// call S3 to retrieve upload file to specified bucket
-//var uploadParams = {Bucket: 'photos-gallery', Key: '', Body: ''}
-//
 
 var uploads = multer({ storage: multer.memoryStorage() })
 
