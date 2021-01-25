@@ -2,8 +2,8 @@ const photosRouter = require('express').Router()
 const Photo = require('../models/photo')
 const multer = require('multer')
 const helpers = require('./helpers')
-
-var uploads = multer({ storage: multer.memoryStorage() })
+const uploads = multer({ storage: multer.memoryStorage() })
+const basePhotoUrl = 'https://photos-gallery.s3.eu-central-1.amazonaws.com/'
 
 
 photosRouter.get('/', async (request, response) => {
@@ -24,39 +24,31 @@ photosRouter.get('/download/:id', async (request, response) => {
 })
 
 photosRouter.delete('/:id', async (request, response) => {
-    try{
-        const id = request.params.id
-        const photo = await Photo.findById(id)
-        helpers.removePhoto(photo)
-      await Photo.findOneAndRemove({_id: id})
-      response.status(204).json({msg: 'Photo removed'})
-    }catch(error) {
-        console.log(error)
-    }
+    const id = request.params.id
+    const photo = await Photo.findById(id)
+    helpers.removePhoto(photo)
+    await Photo.findOneAndRemove({_id: id})
+    response.status(204).json({msg: 'Photo removed'})
 })
 
 photosRouter.put('/:id', async (request, response) => {
-    try{
-        const id = request.params.id
-        const note = {...request.body, isFeatured: !request.body.isFeatured}
-        const savedPhoto = await Photo.findByIdAndUpdate(id, note, {new: true})
-        console.log('saved photo', savedPhoto)
-        response.send(savedPhoto)
-    }catch(error){
-        console.log(error)
-    }
+    const id = request.params.id
+    const note = {...request.body, isFeatured: !request.body.isFeatured}
+    const savedPhoto = await Photo.findByIdAndUpdate(id, note, {new: true})
+    console.log('saved photo', savedPhoto)
+    response.send(savedPhoto)
 })
 
 photosRouter.post('/', uploads.single('image'), async (req,res) => {
     const file = req.file
-    const a = [{prefix: 'small', size: [400, 500]}, {prefix: 'medium', size: [1366, 768]}, {prefix: 'large', size: []} ]
-    helpers.resizeMultiple(file.buffer,a, file.originalname)
+    const photoSizes = [{prefix: 'small', size: [400, 500]}, {prefix: 'medium', size: [1366, 768]}, {prefix: 'large', size: []} ]
+    helpers.resizeMultiple(file.buffer, photoSizes, file.originalname)
     const newPhoto = new Photo({
         name: file.originalname,
         description: req.body.description || '',
-        small: `https://photos-gallery.s3.eu-central-1.amazonaws.com/small_${req.file.originalname}`,
-        medium: `https://photos-gallery.s3.eu-central-1.amazonaws.com/medium_${req.file.originalname}`,
-        large: `https://photos-gallery.s3.eu-central-1.amazonaws.com/large_${req.file.originalname}`,
+        small: `${basePhotoUrl}small_${req.file.originalname}`,
+        medium: `${basePhotoUrl}medium_${req.file.originalname}`,
+        large: `${basePhotoUrl}large_${req.file.originalname}`,
         isFeatured: req.body.isFeatured || false
     })
     const savedPhoto = await newPhoto.save()
