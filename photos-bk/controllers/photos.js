@@ -6,8 +6,10 @@ const sharp = require('sharp')
 const AWS = require('aws-sdk')
 const {Readable} = require('stream')
 const multer = require('multer')
+const config = require('../utils/config')
+console.log(config.aws_id, config.aws_secret_key)
 s3 = new AWS.S3({apiVersion: '2006-03-01'});
-AWS.config.update({accessKeyId: 'AKIAWGY4ISEAZB4XWKIW', secretAccessKey: '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' , region: 'eu-central-1'});
+AWS.config.update({accessKeyId: config.aws_id, secretAccessKey: config.aws_secret_key , region: 'eu-central-1'});
 
 // call S3 to retrieve upload file to specified bucket
 var uploadParams = {Bucket: 'photos-gallery', Key: '', Body: ''}
