@@ -1,4 +1,4 @@
-node_modules/
-requests/
+node_modules
+requests
 .env
-uploads/
+uploads
