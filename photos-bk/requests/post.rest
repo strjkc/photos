@@ -1,6 +1,0 @@
-PUT http://localhost:5000/photos/5f6e21fdec33f14da77b4b83
-Content-Type: application/json
-
-{
-    "isFeatured": true
-}
