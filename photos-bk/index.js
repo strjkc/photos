@@ -5,10 +5,10 @@ const userRouter = require('./controllers/login')
 const photosRouter = require('./controllers/photos')
 const mongoose = require('mongoose')
 const middleweare = require('./middleweare')
+const config = require('./utils/config')
 
 const app = express()
-const dbUrl = process.env.DBURL
-mongoose.connect(dbUrl, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(config.dbUrl, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(
         () => console.log('Connected to database')
     )

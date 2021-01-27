@@ -41,7 +41,7 @@ photosRouter.put('/:id', async (request, response) => {
 
 photosRouter.post('/', uploads.single('image'), async (req,res) => {
     const file = req.file
-    const photoSizes = [{prefix: 'small', size: [400, 500]}, {prefix: 'medium', size: [1366, 768]}, {prefix: 'large', size: []} ]
+    const photoSizes = [{prefix: 'small', size: [600, 400]}, {prefix: 'medium', size: [2000, 1333]}, {prefix: 'large', size: []} ]
     helpers.resizeMultiple(file.buffer, photoSizes, file.originalname)
     const newPhoto = new Photo({
         name: file.originalname,
