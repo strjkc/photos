@@ -5,7 +5,10 @@ const photo = new mongoose.Schema({
         type: String,
         required: true
     },
-    description: String,
+    description: {
+      type: String,
+      maxLength: 238
+    },
     small: {
         type: String,
         required: true
